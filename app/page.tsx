@@ -6,6 +6,7 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/cjs/styles/prism";
 import Image from "next/image";
 
+
 type Message = {
   role: "user" | "assistant";
   content: string;
@@ -17,7 +18,9 @@ type Chat = {
   messages: Message[];
 };
 
+
 export default function Home() {
+  const [input, setInput] = useState("");
   const defaultMessage: Message[] = [
     {
       role: "assistant",
@@ -26,33 +29,35 @@ export default function Home() {
     },
   ];
 
-  const [input, setInput] = useState("");
-  const [messages, setMessages] =
-    useState<Message[]>(defaultMessage);
+const [messages, setMessages] =
+  useState<Message[]>(defaultMessage);
 
-  const [chatHistory, setChatHistory] =
-    useState<Chat[]>([]);
+const [chatHistory, setChatHistory] =
+  useState<Chat[]>([]);
 
-  const [currentChatId, setCurrentChatId] =
-    useState<string>("");
+    const [currentChatId, setCurrentChatId] = useState<string>("");
 
-  // Load chats
-  useEffect(() => {
-    const saved = localStorage.getItem("wow-ai-history");
+    useEffect(() => {
+      const loadChats = () => {
+        const saved =
+          localStorage.getItem("wow-ai-history");
 
-    if (!saved) return;
+        if (!saved) return;
 
-    const parsed: Chat[] = JSON.parse(saved);
+        const parsed: Chat[] = JSON.parse(saved);
 
-    setChatHistory(parsed);
+        setChatHistory(parsed);
 
-    if (parsed.length > 0) {
-      setCurrentChatId(parsed[0].id);
-      setMessages(parsed[0].messages);
-    }
-  }, []);
+        if (parsed.length > 0) {
+          setCurrentChatId(parsed[0].id);
+          setMessages(parsed[0].messages);
+        }
+      };
 
-  // Save chats
+      loadChats();
+    }, []);
+
+
   useEffect(() => {
     localStorage.setItem(
       "wow-ai-history",
@@ -65,16 +70,12 @@ export default function Home() {
   }
 
   async function sendMessage() {
-    if (!input.trim()) return;
+    if (!input) return;
 
     const updatedMessages: Message[] = [
       ...messages,
-      {
-        role: "user",
-        content: input,
-      },
+      { role: "user", content: input },
     ];
-
     setMessages(updatedMessages);
     setInput("");
 
@@ -105,8 +106,7 @@ export default function Home() {
     );
 
     const title =
-      firstUserMessage?.content.slice(0, 30) ||
-      "New Chat";
+      firstUserMessage?.content?.slice(0, 30) || "New Chat";
 
     const updatedChat: Chat = {
       id: currentChatId || Date.now().toString(),
@@ -125,6 +125,7 @@ export default function Home() {
     });
   }
 
+
   function createNewChat() {
     const newChat: Chat = {
       id: Date.now().toString(),
@@ -133,15 +134,13 @@ export default function Home() {
     };
 
     setCurrentChatId(newChat.id);
+
     setMessages(defaultMessage);
 
-    setChatHistory((prev) => [
-      newChat,
-      ...prev,
-    ]);
+    setChatHistory((prev) => [newChat, ...prev]);
   }
 
-  function loadChat(chat: Chat) {
+function loadChat(chat: Chat) {
     setCurrentChatId(chat.id);
     setMessages(chat.messages);
   }
@@ -153,6 +152,7 @@ export default function Home() {
 
     setChatHistory(filtered);
 
+    // If deleting active chat
     if (currentChatId === chatId) {
       if (filtered.length > 0) {
         setCurrentChatId(filtered[0].id);
@@ -177,10 +177,10 @@ export default function Home() {
   return (
     <main className="flex h-screen bg-black text-white overflow-hidden">
 
-      {/* SIDEBAR */}
+      {/* LEFT SIDEBAR */}
       <aside className="w-[260px] bg-zinc-950 border-r border-zinc-800 flex flex-col">
-
-        {/* LOGO */}
+        
+        {/* Logo */}
         <div className="p-4 border-b border-zinc-800">
           <div className="flex items-center gap-3">
             <Image
@@ -197,27 +197,27 @@ export default function Home() {
               </div>
 
               <div className="text-xs text-zinc-400">
-                WoW Assistant
+                WOW Assistant
               </div>
             </div>
           </div>
         </div>
 
-        {/* NEW CHAT */}
+        {/* New Chat */}
         <div className="p-4">
           <button
-            onClick={createNewChat}
-            className="w-full bg-zinc-800 hover:bg-zinc-700 transition rounded-xl p-3 text-left"
-          >
+              onClick={createNewChat}
+              className="w-full bg-zinc-800 hover:bg-zinc-700 transition rounded-xl p-3 text-left"
+            >
             + New Chat
           </button>
         </div>
 
-        {/* HISTORY */}
+        {/* History */}
         <div className="flex-1 overflow-y-auto px-2 pb-4">
-
+          
           <div className="flex items-center justify-between px-3 mb-2">
-
+            
             <div className="text-xs text-zinc-500 uppercase">
               History
             </div>
@@ -243,6 +243,7 @@ export default function Home() {
               }`}
             >
 
+              {/* Chat Load */}
               <button
                 onClick={() => loadChat(chat)}
                 className="flex-1 text-left truncate"
@@ -250,6 +251,7 @@ export default function Home() {
                 {chat.title}
               </button>
 
+              {/* Delete Button */}
               <button
                 onClick={() => deleteChat(chat.id)}
                 className="opacity-0 group-hover:opacity-100 text-zinc-400 hover:text-red-500 transition ml-2"
@@ -263,10 +265,10 @@ export default function Home() {
         </div>
       </aside>
 
-      {/* MAIN */}
+      {/* MAIN CHAT AREA */}
       <section className="flex-1 flex flex-col">
 
-        {/* TOP */}
+        {/* TOP BAR */}
         <div className="h-[70px] border-b border-zinc-800 flex items-center px-8">
           <h1 className="text-xl font-semibold">
             World of Warcraft AI Assistant
@@ -275,7 +277,7 @@ export default function Home() {
 
         {/* MESSAGES */}
         <div className="flex-1 overflow-y-auto">
-
+          
           <div className="max-w-[1500px] mx-auto w-full px-6 py-10 space-y-6">
 
             {messages.map((msg, index) => (
@@ -294,31 +296,23 @@ export default function Home() {
                       : "bg-zinc-800"
                   }`}
                 >
-
                   <ReactMarkdown
                     components={{
-                      code({
-                        children,
-                        className,
-                      }) {
-                        const match =
-                          /language-(\w+)/.exec(
-                            className || ""
-                          );
+                      code(props) {
+                        const { children, className } = props;
 
-                        const codeString = String(
-                          children
-                        ).replace(/\n$/, "");
+                        const match = /language-(\w+)/.exec(className || "");
+
+                        const codeString = String(children).replace(/\n$/, "");
 
                         if (match) {
                           return (
                             <div className="relative group">
-
+                              
+                              {/* Copy Button */}
                               <button
-                                onClick={() =>
-                                  copyCode(codeString)
-                                }
-                                className="absolute top-3 right-3 bg-zinc-700 hover:bg-zinc-600 text-xs px-3 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition z-10"
+                                onClick={() => copyCode(codeString)}
+                                className="absolute top-3 right-3 bg-zinc-700 hover:bg-zinc-600 text-xs px-3 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition"
                               >
                                 Copy
                               </button>
@@ -337,7 +331,6 @@ export default function Home() {
                               >
                                 {codeString}
                               </SyntaxHighlighter>
-
                             </div>
                           );
                         }
@@ -352,7 +345,6 @@ export default function Home() {
                   >
                     {msg.content}
                   </ReactMarkdown>
-
                 </div>
               </div>
             ))}
@@ -362,11 +354,12 @@ export default function Home() {
 
         {/* INPUT */}
         <div className="border-t border-zinc-800 p-6">
-
+          
           <div className="max-w-[1500px] mx-auto">
-
+            
             <div className="flex items-center gap-4 bg-zinc-900 border border-zinc-800 rounded-2xl px-5 py-4">
 
+              {/* Avatar */}
               <Image
                 src="/wowai-chat.png"
                 alt="Chat Icon"
@@ -375,11 +368,10 @@ export default function Home() {
                 className="rounded-full"
               />
 
+              {/* Input */}
               <input
                 value={input}
-                onChange={(e) =>
-                  setInput(e.target.value)
-                }
+                onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     sendMessage();
@@ -389,6 +381,7 @@ export default function Home() {
                 placeholder="Ask anything about World of Warcraft..."
               />
 
+              {/* Send */}
               <button
                 onClick={sendMessage}
                 className="bg-blue-600 hover:bg-blue-700 transition px-5 py-2 rounded-xl font-medium"
