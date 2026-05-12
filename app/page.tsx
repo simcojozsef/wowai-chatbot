@@ -95,7 +95,7 @@ const [chatHistory, setChatHistory] =
       ...updatedMessages,
       {
         role: "assistant",
-        content: data.message.content,
+        content: data.message,
       },
     ];
 
