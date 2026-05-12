@@ -31,27 +31,28 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
 
+    const messages = body.messages || [];
+
     const completion = await openai.chat.completions.create({
-      model: "gpt-4.1-mini",
+      model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
           content: SYSTEM_PROMPT,
         },
-        ...body.messages,
+        ...messages,
       ],
     });
 
     return NextResponse.json({
-      message:
-        completion.choices[0].message.content,
+      message: completion.choices[0].message,
     });
   } catch (error) {
-    console.error(error);
+    console.error("OPENAI ERROR:", error);
 
     return NextResponse.json(
       {
-        error: "Something went wrong.",
+        error: String(error),
       },
       {
         status: 500,
